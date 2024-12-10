@@ -1,101 +1,155 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { LineChart } from '../components/LineChart'
+import { BarChart } from '../components/BarChart'
+import { PieChart } from '../components/PieChart'
+import { DataTable } from '../components/DataTable'
+import { co2Data, populationData, energyData } from '../data/mockData'
+import { ArrowUpDown, BarChartIcon, PieChartIcon, LineChartIcon } from 'lucide-react'
+
+export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState('co2')
+  const [timeRange, setTimeRange] = useState('all')
+  const [chartType, setChartType] = useState('line')
+  const [isAscending, setIsAscending] = useState(true)
+
+  const filterData = (data, range) => {
+    if (range === 'all') return data
+    const currentYear = new Date().getFullYear()
+    const startYear = currentYear - parseInt(range)
+    return {
+      ...data,
+      labels: data.labels.filter(year => parseInt(year) >= startYear),
+      datasets: data.datasets.map(dataset => ({
+        ...dataset,
+        data: dataset.data.slice(-parseInt(range))
+      }))
+    }
+  }
+
+  const sortData = (data) => {
+    const sortedData = {...data}
+    const lastIndex = data.labels.length - 1
+    sortedData.labels = [...data.labels].sort((a, b) => isAscending ? a.localeCompare(b) : b.localeCompare(a))
+    sortedData.datasets = data.datasets.map(dataset => ({
+      ...dataset,
+      data: [...dataset.data].sort((a, b) => isAscending ? a - b : b - a)
+    }))
+    return sortedData
+  }
+
+  const [currentData, setCurrentData] = useState(filterData(co2Data, timeRange))
+
+  useEffect(() => {
+    let data
+    switch (activeTab) {
+      case 'co2':
+        data = filterData(co2Data, timeRange)
+        break
+      case 'population':
+        data = populationData
+        break
+      case 'energy':
+        data = energyData
+        break
+    }
+    setCurrentData(sortData(data))
+  }, [activeTab, timeRange, isAscending])
+
+  const renderChart = () => {
+    switch (chartType) {
+      case 'line':
+        return <LineChart data={currentData} />
+      case 'bar':
+        return <BarChart data={currentData} />
+      case 'pie':
+        return <PieChart data={currentData} />
+      default:
+        return <LineChart data={currentData} />
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-4xl sm:text-5xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-green-400">Global Data Visualization Dashboard</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <TabsList className="bg-gray-700 mb-4 sm:mb-0">
+              <TabsTrigger value="co2" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">CO2 Emissions</TabsTrigger>
+              <TabsTrigger value="population" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">Population Growth</TabsTrigger>
+              <TabsTrigger value="energy" className="data-[state=active]:bg-yellow-600 data-[state=active]:text-white">Energy Consumption</TabsTrigger>
+            </TabsList>
+
+            <div className="flex flex-wrap gap-2">
+              <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger className="w-[180px] bg-gray-700 text-gray-100 border-gray-600">
+                  <SelectValue placeholder="Select time range" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-700 text-gray-100 border-gray-600">
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="30">Last 30 Years</SelectItem>
+                  <SelectItem value="20">Last 20 Years</SelectItem>
+                  <SelectItem value="10">Last 10 Years</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsAscending(!isAscending)}
+                className="bg-gray-700 text-gray-100 border-gray-600 hover:bg-gray-600 hover:text-white"
+              >
+                Sort {isAscending ? 'Desc' : 'Asc'}
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="bg-gray-800 border-gray-700 shadow-xl">
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <CardTitle className="text-xl sm:text-2xl text-gray-100">
+                    {activeTab === 'co2' && 'Global CO2 Emissions Over Time'}
+                    {activeTab === 'population' && 'Population Growth by Region'}
+                    {activeTab === 'energy' && 'Global Energy Consumption by Source'}
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => setChartType('line')} className="text-gray-100 hover:text-white"><LineChartIcon /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setChartType('bar')} className="text-gray-100 hover:text-white"><BarChartIcon /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setChartType('pie')} className="text-gray-100 hover:text-white"><PieChartIcon /></Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {renderChart()}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </AnimatePresence>
+
+          <Card className="bg-gray-800 border-gray-700 shadow-xl mt-8">
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-2xl text-gray-100">Data Table</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DataTable data={currentData} />
+            </CardContent>
+          </Card>
+        </Tabs>
+      </div>
     </div>
-  );
+  )
 }
+
