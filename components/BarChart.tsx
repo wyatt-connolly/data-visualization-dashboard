@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  ChartOptions,
 } from 'chart.js'
 
 ChartJS.register(
@@ -20,12 +21,27 @@ ChartJS.register(
   Legend
 )
 
-export function BarChart({ data }) {
-  const options = {
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    backgroundColor?: string | string[];
+    borderColor?: string | string[];
+    borderWidth?: number;
+  }[];
+}
+
+interface BarChartProps {
+  data: ChartData;
+}
+
+export function BarChart({ data }: BarChartProps) {
+  const options: ChartOptions<'bar'> = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: 'top',
         labels: {
           color: 'rgba(255, 255, 255, 0.9)',
           font: {
@@ -34,7 +50,7 @@ export function BarChart({ data }) {
         },
       },
       tooltip: {
-        mode: 'index' as const,
+        mode: 'index',
         intersect: false,
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: 'rgba(255, 255, 255, 0.9)',
@@ -68,7 +84,7 @@ export function BarChart({ data }) {
     },
   }
 
-  const chartData = {
+  const chartData: ChartData = {
     ...data,
     datasets: data.datasets.map(dataset => ({
       ...dataset,

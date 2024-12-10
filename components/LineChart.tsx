@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  ChartOptions,
 } from 'chart.js'
 
 ChartJS.register(
@@ -24,12 +25,31 @@ ChartJS.register(
   Filler
 )
 
-export function LineChart({ data }) {
-  const options = {
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor?: string;
+    backgroundColor?: string;
+    fill?: boolean;
+    tension?: number;
+    pointRadius?: number;
+    pointHoverRadius?: number;
+    borderWidth?: number;
+  }[];
+}
+
+interface LineChartProps {
+  data: ChartData;
+}
+
+export function LineChart({ data }: LineChartProps) {
+  const options: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: 'top',
         labels: {
           color: 'rgba(255, 255, 255, 0.9)',
           font: {
@@ -38,7 +58,7 @@ export function LineChart({ data }) {
         },
       },
       tooltip: {
-        mode: 'index' as const,
+        mode: 'index',
         intersect: false,
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: 'rgba(255, 255, 255, 0.9)',
@@ -71,13 +91,13 @@ export function LineChart({ data }) {
       },
     },
     interaction: {
-      mode: 'nearest' as const,
-      axis: 'x' as const,
+      mode: 'nearest',
+      axis: 'x',
       intersect: false,
     },
   }
 
-  const chartData = {
+  const chartData: ChartData = {
     ...data,
     datasets: data.datasets.map(dataset => ({
       ...dataset,

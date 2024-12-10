@@ -9,7 +9,19 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export function DataTable({ data }) {
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+  }[];
+}
+
+interface DataTableProps {
+  data: ChartData;
+}
+
+export function DataTable({ data }: DataTableProps) {
   return (
     <div className="overflow-x-auto">
       <Table className="border-collapse w-full">
